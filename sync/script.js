@@ -63,11 +63,11 @@ async function paginate(token, initialUrl) {
 
 async function getPlaylistTracks(token, playlistId) {
   const uris = [];
-  let next = `${API}/playlists/${playlistId}/tracks?limit=100`;
+  let next = `${API}/playlists/${playlistId}/items?limit=100`;
   while (next) {
     const data = await get(token, next);
     for (const item of data.items || []) {
-      const uri = item?.track?.uri;
+      const uri = item?.item?.uri;
       if (uri && uri.startsWith('spotify:track:')) uris.push(uri);
     }
     next = data.next || null;
@@ -172,12 +172,12 @@ async function getPlaylistTracks(token, playlistId) {
 
       for (let i = 0; i < toRemove.length; i += 100) {
         const batch = toRemove.slice(i, i + 100).map(uri => ({ uri }));
-        await del(token, `/playlists/${mixedPlaylist.id}/tracks`, { tracks: batch });
+        await del(token, `/playlists/${mixedPlaylist.id}/items`, { items: batch });
       }
 
       for (let i = 0; i < toAdd.length; i += 100) {
         const batch = toAdd.slice(i, i + 100);
-        await post(token, `/playlists/${mixedPlaylist.id}/tracks`, { uris: batch });
+        await post(token, `/playlists/${mixedPlaylist.id}/items`, { uris: batch });
       }
     }
 
