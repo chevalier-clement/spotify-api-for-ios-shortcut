@@ -151,7 +151,7 @@ async function getPlaylistTracks(token, playlistId) {
 
       if (isNew) {
         log(`  Creating "${mixedName}"…`);
-        mixedPlaylist = await post(token, `/users/${userId}/playlists`, {
+        mixedPlaylist = await post(token, `/me/playlists`, {
           name: mixedName,
           public: false,
           description: 'Auto-generated. Do not edit manually.',
