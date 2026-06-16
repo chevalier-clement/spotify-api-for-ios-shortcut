@@ -9,9 +9,15 @@ No server, no client secret — all logic runs in the browser via JavaScript.
 
 ```
 /
-├── auth/           ← OAuth 2.0 PKCE flow (get an access token)
-├── sync/           ← Sync grouped playlists into Mixed playlists
-└── index.html      ← Redirects to /auth/
+├── auth/               ← OAuth 2.0 PKCE flow (get an access token)
+├── sync/               ← Sync grouped playlists into Mixed playlists
+├── api/
+│   └── spotify/
+│       ├── config.js   ← Spotify API URLs
+│       └── client.js   ← HTTP helpers (get, post, del, paginate)
+├── utils/
+│   └── crypto.js       ← PKCE helpers (random string, SHA-256, base64url)
+└── index.html          ← Redirects to /auth/
 ```
 
 ---

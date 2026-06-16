@@ -1,21 +1,5 @@
-const generateRandomString = (length) => {
-  const possible = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
-  const values = crypto.getRandomValues(new Uint8Array(length));
-  return values.reduce((acc, x) => acc + possible[x % possible.length], "");
-};
-
-const sha256 = async (plain) => {
-  const encoder = new TextEncoder();
-  const data = encoder.encode(plain);
-  return window.crypto.subtle.digest('SHA-256', data);
-};
-
-const base64encode = (input) => {
-  return btoa(String.fromCharCode(...new Uint8Array(input)))
-    .replace(/=/g, '')
-    .replace(/\+/g, '-')
-    .replace(/\//g, '_');
-};
+import { generateRandomString, sha256, base64encode } from '../utils/crypto.js';
+import { SPOTIFY_AUTH_URL, SPOTIFY_TOKEN_URL } from '../api/spotify/config.js';
 
 (async () => {
   const redirectUri = window.location.origin + window.location.pathname;
@@ -75,7 +59,7 @@ const base64encode = (input) => {
       };
       if (scope) authParams.scope = scope;
 
-      const authUrl = new URL('https://accounts.spotify.com/authorize');
+      const authUrl = new URL(SPOTIFY_AUTH_URL);
       authUrl.search = new URLSearchParams(authParams).toString();
 
       window.location.href = authUrl.toString();
@@ -102,7 +86,7 @@ const base64encode = (input) => {
 
     let token;
     try {
-      const response = await fetch('https://accounts.spotify.com/api/token', {
+      const response = await fetch(SPOTIFY_TOKEN_URL, {
         method: 'POST',
         headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
         body: new URLSearchParams({
