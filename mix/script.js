@@ -78,7 +78,7 @@ async function getPlaylistTracks(token, playlistId) {
 
     for (const [prefix, sources] of groups) {
       const mixedName = `${prefix} - Mixed`;
-      setStatus(`Syncing: ${mixedName}…`);
+      setStatus(`Mixing: ${mixedName}…`);
       log(`\n▶ ${mixedName}`);
 
       const targetSet = new Set();
@@ -123,7 +123,7 @@ async function getPlaylistTracks(token, playlistId) {
       }
     }
 
-    const summary = `Sync complete: ${created} created, ${updated} updated.`;
+    const summary = `Mix complete: ${created} created, ${updated} updated.`;
     setStatus(summary);
     log(`\n✓ ${summary}`);
 

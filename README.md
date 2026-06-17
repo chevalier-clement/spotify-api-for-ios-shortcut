@@ -10,7 +10,7 @@ No server, no client secret — all logic runs in the browser via JavaScript.
 ```
 /
 ├── auth/               ← OAuth 2.0 PKCE flow (get an access token)
-├── sync/               ← Sync grouped playlists into Mixed playlists
+├── mix/                ← Mix grouped playlists into Mixed playlists
 ├── api/
 │   └── spotify/
 │       ├── config.js   ← Spotify API URLs
@@ -46,28 +46,28 @@ https://chevalier-clement.github.io/spotify-api-for-ios-shortcut/auth/?client_id
 
 ---
 
-### `/sync/` — Sync grouped playlists into Mixed playlists
+### `/mix/` — Mix grouped playlists into Mixed playlists
 
 Reads all your marked playlists, groups them by prefix, and creates or updates a `<Prefix> - Mixed` playlist for each group.
 
 ```
-https://chevalier-clement.github.io/spotify-api-for-ios-shortcut/sync/?token=<ACCESS_TOKEN>&shortcut_name=<SHORTCUT_NAME>
+https://chevalier-clement.github.io/spotify-api-for-ios-shortcut/mix/?token=<ACCESS_TOKEN>&shortcut_name=<SHORTCUT_NAME>
 ```
 
 | Parameter | Required | Description |
 |---|---|---|
 | `token` | Yes | A valid Spotify access token (obtained from `/auth/`) |
-| `shortcut_name` | No | Shortcut to call back with a sync summary on completion |
+| `shortcut_name` | No | Shortcut to call back with a mix summary on completion |
 
 #### Why a naming convention?
 
 Spotify's folder structure (the folders visible in the desktop and mobile apps) is a **client-side only feature** — the Spotify Web API has no concept of folders. There is no endpoint to list folders, get playlists within a folder, or assign a playlist to a folder.
 
-The naming convention below is the workaround: the playlist name encodes the folder path, allowing the sync to group playlists without needing folder access.
+The naming convention below is the workaround: the playlist name encodes the folder path, allowing the mix to group playlists without needing folder access.
 
 #### Naming convention
 
-Playlists must follow this pattern to be picked up by the sync:
+Playlists must follow this pattern to be picked up by the mix:
 
 ```
 <Prefix> - <Name> @
@@ -89,13 +89,13 @@ Playlists must follow this pattern to be picked up by the sync:
 
 #### First run
 
-On first sync, `Rap France - Mixed` is created at the **root of your library** — the Spotify API cannot place playlists into folders programmatically.
+On first mix, `Rap France - Mixed` is created at the **root of your library** — the Spotify API cannot place playlists into folders programmatically.
 
-Open the Spotify desktop client, drag the playlist into the folder of your choice. Subsequent syncs update its tracks regardless of where it sits in your library.
+Open the Spotify desktop client, drag the playlist into the folder of your choice. Subsequent mixes update its tracks regardless of where it sits in your library.
 
-#### Sync behaviour
+#### Mix behaviour
 
-For each group, the sync:
+For each group, the mix:
 - **Adds** tracks present in source playlists but missing from Mixed
 - **Removes** tracks no longer present in any source playlist of the group
 - **Deduplicates** — each track appears at most once in Mixed
@@ -109,7 +109,7 @@ For each group, the sync:
 | Route | Scopes |
 |---|---|
 | `/auth/` | *(any scope you need — they are listed to the user before the redirect)* |
-| `/sync/` | `playlist-read-private playlist-modify-private` |
+| `/mix/` | `playlist-read-private playlist-modify-private` |
 
 Pass scopes as the `scope` parameter when calling `/auth/`:
 
@@ -133,7 +133,7 @@ scope=playlist-read-private%20playlist-modify-private
 
 ### 2. Build your iOS Shortcuts
 
-Keep auth and sync as **two separate Shortcuts** — tokens are valid for 1 hour, so you can run the sync repeatedly without re-authenticating each time.
+Keep auth and mix as **two separate Shortcuts** — tokens are valid for 1 hour, so you can run the mix repeatedly without re-authenticating each time.
 
 **Shortcut 1 — Authenticate**
 
@@ -142,16 +142,16 @@ Keep auth and sync as **two separate Shortcuts** — tokens are valid for 1 hour
    https://…/auth/?client_id=YOUR_CLIENT_ID&shortcut_name=SpotifyAuth&scope=playlist-read-private%20playlist-modify-private
    ```
 2. The Shortcut receives the access token as text input
-3. Store it (e.g. in a global variable or a text file in iCloud) for use by the sync Shortcut
+3. Store it (e.g. in a global variable or a text file in iCloud) for use by the mix Shortcut
 
-**Shortcut 2 — Sync**
+**Shortcut 2 — Mix**
 
 1. Retrieve the stored token
 2. Open URL in Safari:
    ```
-   https://…/sync/?token=TOKEN&shortcut_name=SpotifySync
+   https://…/mix/?token=TOKEN&shortcut_name=SpotifyMix
    ```
-3. The Shortcut receives a summary: `Sync complete: 0 created, 3 updated.`
+3. The Shortcut receives a summary: `Mix complete: 0 created, 3 updated.`
 
 ---
 
@@ -159,6 +159,6 @@ Keep auth and sync as **two separate Shortcuts** — tokens are valid for 1 hour
 
 - **No client secret** — PKCE is designed for public clients; the Client ID is inherently public
 - **Token never stored** — passed directly from the browser to your Shortcut via the `shortcuts://` URL scheme and never written to disk
-- **Strict Content-Security-Policy** — each page can only connect to the specific Spotify domains it needs (`accounts.spotify.com` for auth, `api.spotify.com` for sync)
+- **Strict Content-Security-Policy** — each page can only connect to the specific Spotify domains it needs (`accounts.spotify.com` for auth, `api.spotify.com` for mix)
 - **CSRF protection** — the auth flow validates a `state` parameter to prevent cross-site request forgery
 - **Scope transparency** — requested scopes are always displayed to the user before any redirect to Spotify
