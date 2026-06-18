@@ -84,8 +84,12 @@ async function getPlaylistTracks(token, playlistId) {
       const targetSet = new Set();
       for (const p of sources) {
         log(`  • "${p.name}"`);
-        const uris = await getPlaylistTracks(token, p.id);
-        uris.forEach(uri => targetSet.add(uri));
+        try {
+          const uris = await getPlaylistTracks(token, p.id);
+          uris.forEach(uri => targetSet.add(uri));
+        } catch (e) {
+          log(`    ✗ Skipped (${e.message}) — playlist id: ${p.id}`);
+        }
       }
       log(`  → ${targetSet.size} unique track(s) in group`);
 
