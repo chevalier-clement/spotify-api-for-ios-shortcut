@@ -8,9 +8,9 @@ const logEl = document.getElementById('log');
 function setStatus(msg) { statusEl.textContent = msg; }
 function log(msg) { logEl.textContent += msg + '\n'; }
 
-async function getPlaylistTracks(token, playlistId) {
+async function getPlaylistItems(token, playlistId) {
   const uris = [];
-  let next = `/playlists/${playlistId}/tracks?limit=100`;
+  let next = `/playlists/${playlistId}/items?limit=100`;
   while (next) {
     const data = await get(token, next);
     for (const item of data.items || []) {
@@ -85,13 +85,13 @@ async function getPlaylistTracks(token, playlistId) {
       for (const p of sources) {
         log(`  • "${p.name}"`);
         try {
-          const uris = await getPlaylistTracks(token, p.id);
+          const uris = await getPlaylistItems(token, p.id);
           uris.forEach(uri => targetSet.add(uri));
         } catch (e) {
           log(`    ✗ Skipped (${e.message}) — playlist id: ${p.id}`);
         }
       }
-      log(`  → ${targetSet.size} unique track(s) in group`);
+      log(`  → ${targetSet.size} unique item(s) in group`);
 
       let mixedPlaylist = mixedByName[mixedName];
       const isNew = !mixedPlaylist;
@@ -108,7 +108,7 @@ async function getPlaylistTracks(token, playlistId) {
         updated++;
       }
 
-      const currentUris = isNew ? [] : await getPlaylistTracks(token, mixedPlaylist.id);
+      const currentUris = isNew ? [] : await getPlaylistItems(token, mixedPlaylist.id);
       const currentSet = new Set(currentUris);
 
       const toAdd = [...targetSet].filter(uri => !currentSet.has(uri));
@@ -118,12 +118,12 @@ async function getPlaylistTracks(token, playlistId) {
 
       for (let i = 0; i < toRemove.length; i += 100) {
         const batch = toRemove.slice(i, i + 100).map(uri => ({ uri }));
-        await del(token, `/playlists/${mixedPlaylist.id}/tracks`, { tracks: batch });
+        await del(token, `/playlists/${mixedPlaylist.id}/items`, { items: batch });
       }
 
       for (let i = 0; i < toAdd.length; i += 100) {
         const batch = toAdd.slice(i, i + 100);
-        await post(token, `/playlists/${mixedPlaylist.id}/tracks`, { uris: batch });
+        await post(token, `/playlists/${mixedPlaylist.id}/items`, { uris: batch });
       }
     }
 
