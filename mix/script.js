@@ -14,7 +14,7 @@ async function getPlaylistItems(token, playlistId) {
   while (next) {
     const data = await get(token, next);
     for (const item of data.items || []) {
-      const uri = item?.item?.uri;
+      const uri = (item?.item ?? item?.track)?.uri;
       if (uri && uri.startsWith('spotify:track:')) uris.push(uri);
     }
     next = data.next || null;
